@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+
+    <!-- CSS only -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" >
+    <link th:href="@{/css/layout1.css}" rel="stylesheet" />
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main {
+            flex: 1;
+        }
+    </style>
+    <style>
+        .carousel-control-prev-icon,
+        .carousel-control-next-icon {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            background-size: 60% 60%;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .carousel-control-prev,
+        .carousel-control-next {
+            width: 5%;
+        }
+    </style>
+
+    <!-- JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+    <th:block layout:fragment="css"></th:block>
+</head>
+
+<body style="background-color: #fffaf4;">
+<div th:replace="fragments/header::header"></div>
+
+<!--<main style="max-width: 1200px; margin: 0 auto; padding: 60px 20px;">-->
+<main>
+    <div layout:fragment="content"></div>
+</main>
+
+<div class="modal fade" id="rateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form id="rating-form" method="post">
+            <input type="hidden" name="_csrf" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">상대방 평가</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="matchId" id="rate-match-id" />
+                    <p><strong id="target-nickname"></strong> 님을 평가합니다.</p>
+                    <label>별점</label>
+                    <select name="score" class="form-select mb-2" required>
+                        <option value="5">★★★★★</option>
+                        <option value="4">★★★★☆</option>
+                        <option value="3">★★★☆☆</option>
+                        <option value="2">★★☆☆☆</option>
+                        <option value="1">★☆☆☆☆</option>
+                    </select>
+                    <label>한줄평</label>
+                    <textarea name="comment" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">제출</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 평점 보기 모달 -->
+<div class="modal fade" id="ratingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">⭐ 상대방 평점 정보</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="닫기"></button>
+            </div>
+            <div class="modal-body">
+                <p id="averageScore" class="fw-bold fs-5 text-center text-dark">로딩 중...</p>
+                <hr>
+                <ul id="commentList" class="list-group list-group-flush">
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div th:replace="fragments/footer::footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // ⭐ 평점 제출용 모달 설정
+        const rateModal = document.getElementById('rateModal');
+        rateModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            const matchId = button.getAttribute('data-match-id');
+            const nickname = button.getAttribute('data-target-nickname');
+
+            document.getElementById('rate-match-id').value = matchId;
+            document.getElementById('target-nickname').innerText = nickname;
+
+            const form = document.getElementById('rating-form');
+            form.action = `/match/${matchId}/rate`;
+        });
+    });
+
+</script>
+
+<script>
+    function loadRating(button) {
+    const nickname = button.getAttribute('data-nickname');
+
+    fetch(`/rating/${nickname}`)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("averageScore").textContent = `⭐ 평균 평점: ${data.average.toFixed(1)}점`;
+
+            const commentList = document.getElementById("commentList");
+            commentList.innerHTML = '';
+
+            if (!data.comments || data.comments.length === 0) {
+                commentList.innerHTML = '<li class="list-group-item text-muted text-center">등록된 코멘트가 없어요 😢</li>';
+            } else {
+                data.comments.forEach(comment => {
+                    const li = document.createElement("li");
+                    li.className = "list-group-item";
+                    li.innerHTML = `<span class="text-dark">${comment}</span>`;
+                    commentList.appendChild(li);
+                });
+            }
+        })
+        .catch(err => {
+            document.getElementById("averageScore").textContent = '평점 정보를 불러오지 못했어요 😥';
+            console.error(err);
+        });
+}
+
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+      window.markAsRead = function(id) {
+        const token = document.querySelector('meta[name="_csrf"]').content;
+        const header = document.querySelector('meta[name="_csrf_header"]').content;
+
+        fetch('/notifications/read/' + id, {
+          method: 'POST',
+          headers: { [header]: token }
+        }).then(() => {
+          const item = document.querySelector(`#notification-${id}`);
+          if (item) {
+            item.classList.remove('bg-light', 'fw-bold');
+          }
+
+          const badge = document.querySelector('.badge.bg-danger');
+          if (badge) {
+            let count = parseInt(badge.textContent);
+            if (!isNaN(count) && count > 0) {
+              count--;
+              badge.textContent = count;
+              if (count === 0) badge.style.display = 'none';
+            }
+          }
+        });
+      }
+
+      window.deleteNotification = function(id) {
+        event.stopPropagation();
+        const token = document.querySelector('meta[name="_csrf"]').content;
+        const header = document.querySelector('meta[name="_csrf_header"]').content;
+
+        fetch('/notifications/delete/' + id, {
+          method: 'POST',
+          headers: { [header]: token }
+        }).then(() => {
+          const item = document.querySelector(`#notification-${id}`);
+          if (item) item.remove();
+        });
+      }
+
+    });
+</script>
+
+<script th:inline="javascript">
+        const labels = JSON.parse(/*[[${chartLabelsJson}]]*/ '[]');
+        const data1 = JSON.parse(/*[[${chartDataRequest}]]*/ '[]');
+        const data2 = JSON.parse(/*[[${chartDataConfirm}]]*/ '[]');
+        const selectedYear = /*[[${selectedYear}]]*/ 2025;
+        const selectedMonth = /*[[${selectedMonth}]]*/ 7;
+
+        // ✅ 선택된 월의 마지막 날짜 계산
+        const lastDay = new Date(selectedYear, selectedMonth, 0).getDate();  // 예: 2025, 2 → 28, 2025, 3 → 31
+
+        // ✅ 1일부터 마지막 날짜까지 전체 날짜 라벨 생성
+        const allDays = Array.from({ length: lastDay }, (_, i) => i + 1);
+        const formattedLabels = allDays.map(day => `${selectedMonth}/${day}`);
+
+        // ✅ 날짜별 데이터 맵핑
+        const dateToCountMapRequest = Object.fromEntries(labels.map((d, i) => [new Date(d).getDate(), data1[i]]));
+        const dateToCountMapConfirm = Object.fromEntries(labels.map((d, i) => [new Date(d).getDate(), data2[i]]));
+
+        const filledData1 = allDays.map(day => dateToCountMapRequest[day] || 0);
+        const filledData2 = allDays.map(day => dateToCountMapConfirm[day] || 0);
+
+        const ctx = document.getElementById('dailyMatchChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: formattedLabels,
+                datasets: [
+                    {
+                        label: '매칭 요청 수',
+                        data: filledData1,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        barThickness: 20
+                    },
+                    {
+                        label: '성사된 매칭 수',
+                        data: filledData2,
+                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                        barThickness: 20
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        ticks: {
+                            callback: function(value, index) {
+                                // ✅ 5일 단위로만 라벨 출력
+                                return (index + 1) % 5 === 1 ? this.getLabelForValue(value) : '';
+                            },
+                            maxRotation: 0,
+                            minRotation: 0
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 20,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    },
+                    title: {
+                        display: true,
+                        text: '일별 매칭 요청 / 성사 수 (선택한 월)'
+                    }
+                }
+            }
+        });
+</script>
+
+<th:block layout:fragment="script"></th:block>
+
+</body>
+</html>
+

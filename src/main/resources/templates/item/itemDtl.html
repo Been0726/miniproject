@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<head>
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+
+<!-- 사용자 스크립트 -->
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    $(document).ready(function(){
+        calculateToalPrice();
+        $("#count").change(function(){
+            calculateToalPrice();
+        });
+    });
+
+    function calculateToalPrice(){
+        var count = $("#count").val();
+        var price = $("#price").val();
+        var totalPrice = price * count;
+        $("#totalPrice").html(totalPrice + '원');
+    }
+
+    function order(){
+        const token = $("meta[name='_csrf']").attr("content");
+        const header = $("meta[name='_csrf_header']").attr("content");
+
+        $.ajax({
+            url: "/order",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                itemId: $("#itemId").val(),
+                count: $("#count").val()
+            }),
+            beforeSend: function(xhr){ xhr.setRequestHeader(header, token); },
+            success: function(){ alert("주문이 완료되었습니다."); location.href='/'; },
+            error: function(jqXHR){
+                if (jqXHR.status === 401) {
+                    alert('로그인 후 이용해주세요'); location.href='/members/login';
+                } else {
+                    alert(jqXHR.responseText);
+                }
+            }
+        });
+    }
+
+    function addCart(){
+        const token = $("meta[name='_csrf']").attr("content");
+        const header = $("meta[name='_csrf_header']").attr("content");
+
+        $.ajax({
+            url: "/cart",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                itemId: $("#itemId").val(),
+                count: $("#count").val()
+            }),
+            beforeSend: function(xhr){ xhr.setRequestHeader(header, token); },
+            success: function(){ alert("장바구니에 담았습니다."); location.href='/'; },
+            error: function(jqXHR){
+                if (jqXHR.status === 401) {
+                    alert('로그인 후 이용해주세요'); location.href='/members/login';
+                } else {
+                    alert(jqXHR.responseText);
+                }
+            }
+        });
+    }
+  </script>
+</th:block>
+
+<!-- 사용자 CSS -->
+<th:block layout:fragment="css">
+  <style>
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+    }
+
+    .carousel-indicators [data-bs-target] {
+      background-color: #000;
+    }
+
+    .item-detail-box {
+      background-color: #f8f9fa;
+      padding: 30px;
+      border-radius: 10px;
+      margin-top: 40px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .item-detail-text {
+      white-space: pre-line;
+      line-height: 2;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .price-text {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #dc3545;
+    }
+
+    .btn-group {
+      margin-top: 20px;
+    }
+
+    .form-control.w-25 {
+      max-width: 100px;
+    }
+  </style>
+</th:block>
+
+<div layout:fragment="content" class="container mt-5">
+  <input type="hidden" id="itemId" th:value="${item.id}">
+
+  <div class="row g-5">
+    <!-- 이미지 영역 -->
+    <div class="col-md-6">
+      <div id="itemCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000" data-bs-pause="hover">
+        <div class="carousel-indicators">
+          <th:block th:each="itemImg, iterStat : ${item.itemImgDtoList}">
+            <th:block th:if="${iterStat.index < 5}">
+              <button type="button"
+                      data-bs-target="#itemCarousel"
+                      th:attr="data-bs-slide-to=${iterStat.index}"
+                      th:classappend="${iterStat.index == 0} ? ' active'"
+                      th:aria-label="'Slide ' + ${iterStat.index + 1}">
+              </button>
+            </th:block>
+          </th:block>
+        </div>
+
+        <div class="carousel-inner rounded shadow">
+          <th:block th:each="itemImg, iterStat : ${item.itemImgDtoList}">
+            <th:block th:if="${iterStat.index < 5}">
+              <div th:class="'carousel-item' + ${iterStat.index == 0 ? ' active' : ''}">
+                <img th:src="${itemImg.imgUrl}" class="d-block w-100" th:alt="${item.itemNm}"
+                     style="object-fit: cover; height: 500px;">
+              </div>
+            </th:block>
+          </th:block>
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#itemCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon"></span>
+          <span class="visually-hidden">이전</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#itemCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon"></span>
+          <span class="visually-hidden">다음</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 상품 정보 -->
+    <div class="col-md-6">
+      <span th:if="${item.itemSellStatus == T(com.example.miniproject.constant.ItemSellStatus).SELL}" class="badge bg-primary mb-2">판매중</span>
+      <span th:unless="${item.itemSellStatus == T(com.example.miniproject.constant.ItemSellStatus).SELL}" class="badge bg-danger mb-2">품절</span>
+
+      <h3 class="mb-3" th:text="${item.itemNm}"></h3>
+      <hr class="mb-3">
+
+      <h4 class="price-text">
+        <input type="hidden" th:value="${item.price}" id="price" name="price">
+        <span th:text="${item.price}"></span>원
+      </h4>
+
+      <div class="d-flex align-items-center my-3">
+        <label for="count" class="me-2">수량</label>
+        <input type="number" name="count" id="count" class="form-control w-25" value="1" min="1">
+      </div>
+
+      <div class="mb-3">
+        <h6>결제 금액</h6>
+        <h3 id="totalPrice" class="fw-bold"></h3>
+      </div>
+
+      <div class="btn-group d-flex gap-2">
+        <div th:if="${item.itemSellStatus == T(com.example.miniproject.constant.ItemSellStatus).SELL}">
+          <button type="button" class="btn btn-outline-primary" onclick="addCart()">장바구니</button>
+          <button type="button" class="btn btn-primary" onclick="order()">주문하기</button>
+        </div>
+        <div th:unless="${item.itemSellStatus == T(com.example.miniproject.constant.ItemSellStatus).SELL}">
+          <button type="button" class="btn btn-danger" disabled>품절</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 상세 설명 영역 -->
+  <div class="item-detail-box">
+    <h4 class="mb-3">상품 상세 설명</h4>
+    <p class="item-detail-text" th:text="${item.itemDetail}"></p>
+  </div>
+</div>
+
+</html>

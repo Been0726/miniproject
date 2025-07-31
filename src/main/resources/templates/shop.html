@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<th:block layout:fragment="css">
+    <style>
+        body {
+            background-color: #fffaf4;
+        }
+
+        main {
+            flex: 1;
+            padding: 60px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .banner-wrapper {
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        .banner-wrapper img {
+    width: 100%;
+    aspect-ratio: 16 / 4;  /* 가로로 긴 비율 설정 */
+    object-fit: contain;
+}
+
+
+        .product-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 35px;               /* ✅ 간격 약간 늘림 */
+            justify-content: center;
+        }
+
+        .card {
+            flex: 0 1 310px;         /* ✅ 카드 크기 확대 (기존 280px) */
+            border-radius: 20px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+            background-color: #fff;
+            transition: transform 0.2s ease;
+            overflow: hidden;
+        }
+
+        .card-img-top {
+            width: 100%;
+            height: 320px;           /* ✅ 이미지도 약간 키움 */
+            object-fit: cover;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-body {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .card-text {
+            font-size: 0.95rem;
+            color: #666;
+            height: 2.5em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .card-price {
+            font-size: 1.2rem;
+            color: #dc3545;
+            margin-top: 10px;
+        }
+
+        .pagination {
+            margin-top: 40px;
+        }
+    </style>
+</th:block>
+
+<div layout:fragment="content">
+    <main>
+
+        <!-- ✅ 검색어 -->
+        <input type="hidden" name="searchQuery" th:value="${itemSearchDto.searchQuery}">
+        <div th:if="${not #strings.isEmpty(itemSearchDto.searchQuery)}" class="mb-4 text-center">
+            <h4 th:text="${itemSearchDto.searchQuery} + ' 검색 결과'"></h4>
+        </div>
+
+        <!-- ✅ 상품 목록 -->
+        <div class="product-grid">
+            <th:block th:each="item : ${items.getContent()}">
+                <div class="card">
+                    <a th:href="'/item/' + ${item.id}" class="text-dark">
+                        <img th:src="${item.imgUrl}" th:alt="${item.itemNm}" class="card-img-top">
+                        <div class="card-body">
+                            <h5 class="card-title">[[${item.itemNm}]]</h5>
+                            <p class="card-text">[[${item.itemDetail}]]</p>
+                            <div class="card-price">[[${item.price}]]원</div>
+                        </div>
+                    </a>
+                </div>
+            </th:block>
+        </div>
+
+        <!-- ✅ 페이지네이션 -->
+        <div th:with="start=${(items.number/maxPage)*maxPage + 1}, end=(${(items.totalPages == 0) ? 1 : (start + (maxPage - 1) < items.totalPages ? start + (maxPage - 1) : items.totalPages)})" >
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${items.number eq 0}?'disabled':''">
+                    <a th:href="@{'/items?searchQuery=' + ${itemSearchDto.searchQuery} + '&page=' + ${items.number-1}}" class="page-link">Previous</a>
+                </li>
+
+                <li class="page-item" th:each="page : ${#numbers.sequence(start, end)}" th:classappend="${items.number eq page-1}?'active':''">
+                    <a th:href="@{'/items?searchQuery=' + ${itemSearchDto.searchQuery} + '&page=' + ${page-1}}" class="page-link">[[${page}]]</a>
+                </li>
+
+                <li class="page-item" th:classappend="${items.number+1 ge items.totalPages}?'disabled':''">
+                    <a th:href="@{'/items?searchQuery=' + ${itemSearchDto.searchQuery} + '&page=' + ${items.number+1}}" class="page-link">Next</a>
+                </li>
+            </ul>
+        </div>
+
+    </main>
+</div>
+</html>

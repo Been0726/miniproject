@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<head>
+    <title>마이페이지</title>
+    <th:block layout:fragment="css">
+        <style>
+            main {
+                flex: 1;
+                max-width: 860px;
+                margin: 0 auto;
+                padding: 60px 20px;
+            }
+
+            .section-title {
+                font-weight: bold;
+                margin-top: 2rem;
+                margin-bottom: 1rem;
+                font-size: 1.3rem;
+            }
+
+            .card + .card {
+                margin-top: 12px;
+            }
+
+            .card {
+                width: 100%;
+            }
+
+            .badge {
+                font-size: 0.75rem;
+                padding: 0.35em 0.55em;
+            }
+        </style>
+    </th:block>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <main>
+        <h2 class="mb-4">마이페이지</h2>
+        <p><strong th:text="${member.nickname}">닉네임</strong> 님의 마이페이지입니다.</p>
+
+        <div class="point-info mb-4">
+            <p>보유 포인트: <strong th:text="${member.point}">0</strong> P</p>
+            <a href="/point/charge" class="btn btn-sm btn-success me-2">💰 포인트 충전하기</a>
+            <a href="/point/history" class="btn btn-sm btn-secondary">📜 포인트 사용 내역</a>
+        </div>
+
+        <hr>
+
+        <!-- 📝 내가 쓴 글 -->
+        <div class="section-title">📝 내가 쓴 글</div>
+
+        <div th:if="${articlePage.content.isEmpty()}">작성한 글이 없습니다.</div>
+        <div th:each="a : ${articlePage.content}" class="card p-3 mb-2">
+            <a th:href="@{/articles/{id}(id=${a.id})}" class="text-decoration-none text-dark">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold" th:text="${a.title}">글 제목</span>
+                    <span class="badge bg-light text-dark border">[[${'[' + a.commentSize + ']'}]]</span>
+                </div>
+            </a>
+            <div class="small text-muted mt-1">
+                🕒 작성일:
+                <span th:text="${#temporals.format(a.regTime, 'yyyy-MM-dd HH:mm')}">작성일시</span>
+            </div>
+        </div>
+
+        <!-- 글 페이징 -->
+        <div class="d-flex justify-content-center mt-2">
+            <nav>
+                <ul class="pagination pagination-sm">
+                    <li class="page-item" th:classappend="${articlePage.first} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/myPage(articlePage=${articlePage.number - 1}, commentPage=${commentPage.number})}">이전</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, articlePage.totalPages - 1)}"
+                        th:classappend="${i == articlePage.number} ? 'active'">
+                        <a class="page-link"
+                           th:href="@{/myPage(articlePage=${i}, commentPage=${commentPage.number})}"
+                           th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${articlePage.last} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/myPage(articlePage=${articlePage.number + 1}, commentPage=${commentPage.number})}">다음</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- 💬 내가 쓴 댓글 -->
+        <div class="section-title mt-5">💬 내가 쓴 댓글</div>
+
+        <div th:if="${myComments.isEmpty()}">작성한 댓글이 없습니다.</div>
+        <div th:each="c : ${myComments}" class="card p-3 mb-2">
+            <div class="fw-bold mb-1" th:text="${c.body}">댓글 내용</div>
+            <div class="small text-muted">
+                💬 원문제목:
+                <a th:href="@{/articles/{id}(id=${c.articleId})}" th:text="${c.articleTitle}">글 제목</a><br/>
+                🕒 작성일:
+                <span th:text="${#temporals.format(c.regTime, 'yyyy-MM-dd HH:mm')}">작성일시</span>
+            </div>
+        </div>
+
+        <!-- 댓글 페이징 -->
+        <div class="d-flex justify-content-center mt-2">
+            <nav>
+                <ul class="pagination pagination-sm">
+                    <li class="page-item" th:classappend="${commentPage.first} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/myPage(commentPage=${commentPage.number - 1}, articlePage=${articlePage.number})}">이전</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, commentPage.totalPages - 1)}"
+                        th:classappend="${i == commentPage.number} ? 'active'">
+                        <a class="page-link"
+                           th:href="@{/myPage(commentPage=${i}, articlePage=${articlePage.number})}"
+                           th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${commentPage.last} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/myPage(commentPage=${commentPage.number + 1}, articlePage=${articlePage.number})}">다음</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </main>
+</div>
+</body>
+</html>

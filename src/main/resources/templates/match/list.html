@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<div layout:fragment="content" class="container mt-4">
+    <h2>내 매치 내역</h2>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>풋살장</th>
+            <th>날짜</th>
+            <th>시간</th>
+            <th>상대방 닉네임</th>
+            <th>상태</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="req : ${requests}">
+            <td th:text="${req.matchSlot.spot.name}">풋살장</td>
+            <td th:text="${req.matchSlot.date}">날짜</td>
+            <td th:text="${req.matchSlot.startTime + ' ~ ' + req.matchSlot.endTime}">시간</td>
+            <td>
+                <span th:text="${req.opponent != null ? req.opponent.nickname : '없음'}">상대방</span>
+
+                <th:block th:if="${req.opponent != null}">
+                    <button type="button"
+                            class="btn btn-sm btn-outline-info ms-2"
+                            data-bs-toggle="modal"
+                            data-bs-target="#ratingModal"
+                            th:data-nickname="${req.opponent.nickname}"
+                            onclick="loadRating(this)">
+                        ⭐ 평점 보기
+                    </button>
+                </th:block>
+            </td>
+            <td>
+                <div class="d-inline-flex align-items-center gap-2">
+                    <span th:if="${req.status != null and req.status.name() == 'CONFIRMED'}"
+                          class="badge bg-success">매치 확정</span>
+
+                    <th:block th:if="${req.status.name() == 'CONFIRMED'}">
+                        <a th:href="@{'/chat/slot/' + ${req.matchSlot.id}}"
+                           class="btn btn-sm btn-outline-success">
+                            💬 채팅하러 가기
+                        </a>
+                    </th:block>
+
+                    <th:block th:if="${req.status.name() == 'CONFIRMED' and !ratedMatchIds.contains(req.id)}">
+                        <button type="button"
+                                class="btn btn-sm btn-outline-warning"
+                                data-bs-toggle="modal"
+                                data-bs-target="#rateModal"
+                                th:data-match-id="${req.id}"
+                                th:data-target-nickname="${req.opponent != null ? req.opponent.nickname : ''}">
+                            ⭐ 평가하기
+                        </button>
+                    </th:block>
+
+                    <th:block th:if="${req.status.name() == 'CONFIRMED' and ratedMatchIds.contains(req.id)}">
+                        <span class="badge bg-secondary">평가 완료</span>
+                    </th:block>
+
+                    <th:block th:if="${req.status != null and req.status.name() == 'PENDING'}">
+                        <span class="badge bg-warning text-dark">매치 대기중</span>
+                        <form th:action="@{/match/{id}/cancel(id=${req.id})}" method="post"
+                              onsubmit="return confirm('정말 이 매칭을 취소하시겠습니까?')" style="display:inline;">
+                            <input type="hidden" name="_method" value="delete" />
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger">취소</button>
+                        </form>
+                    </th:block>
+
+                    <span th:if="${req.status == null}" class="badge bg-secondary">상태 미지정</span>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const allRatings = /*[[${nicknameAllRatings}]]*/ {};
+
+    document.getElementById('ratingModal').addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const nickname = button.getAttribute('data-nickname');
+        const ratingList = document.getElementById('commentList');
+        const avgRating = document.getElementById('averageScore');
+
+        if (!nickname) {
+            avgRating.textContent = '닉네임 없음';
+            ratingList.innerHTML = '<p class="text-muted">닉네임이 존재하지 않습니다.</p>';
+            return;
+        }
+
+        const ratings = allRatings[nickname] || [];
+
+        if (ratings.length > 0) {
+            const sum = ratings.reduce((acc, r) => acc + r.score, 0);
+            avgRating.textContent = (sum / ratings.length).toFixed(1) + '점';
+        } else {
+            avgRating.textContent = '평가 없음';
+        }
+
+        ratingList.innerHTML = '';
+        ratings.forEach(rating => {
+            const card = document.createElement('div');
+            card.className = 'border p-3 rounded shadow-sm bg-light';
+            card.innerHTML =
+                `<strong>⭐ ${rating.score}점</strong><br/>
+                 <span class="text-muted small">by ${rating.raterNickname}</span><br/>
+                 <p class="mb-0">${rating.comment}</p>`;
+            ratingList.appendChild(card);
+        });
+    });
+    /*]]>*/
+</script>
+
+</html>

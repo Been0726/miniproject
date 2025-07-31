@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<head>
+    <title>포인트 충전</title>
+</head>
+
+<body>
+<main layout:fragment="content" class="container mt-5" style="max-width: 600px;">
+    <h2 class="mb-4 text-center">포인트 충전</h2>
+
+    <form th:action="@{/point/charge}" method="post">
+        <div class="mb-3">
+            <label for="amount" class="form-label">충전 금액</label>
+            <input type="number" class="form-control" id="amount" name="amount" placeholder="ex) 50000" required>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">결제 수단</label>
+            <div class="list-group">
+                <label class="list-group-item d-flex justify-content-between align-items-center">
+                    <input class="form-check-input me-1" type="radio" name="method" disabled> 휴대폰 결제
+                    <span class="badge bg-secondary">준비 중</span>
+                </label>
+                <label class="list-group-item d-flex justify-content-between align-items-center">
+                    <input class="form-check-input me-1" type="radio" name="method" disabled> 카드 결제
+                    <span class="badge bg-secondary">준비 중</span>
+                </label>
+                <label class="list-group-item d-flex justify-content-between align-items-center">
+                    <input class="form-check-input me-1" type="radio" name="method" disabled> 계좌이체
+                    <span class="badge bg-secondary">준비 중</span>
+                </label>
+                <label class="list-group-item d-flex justify-content-between align-items-center">
+                    <input class="form-check-input me-1" type="radio" name="method" disabled> 간편결제 (카카오페이, 네이버페이 등)
+                    <span class="badge bg-secondary">준비 중</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary btn-lg">충전하기</button>
+        </div>
+    </form>
+
+    <p class="text-muted mt-4 text-center">⚠️ 결제 수단은 현재 준비 중이며, 금액 입력 후 바로 충전됩니다.</p>
+</main>
+</body>
+</html>

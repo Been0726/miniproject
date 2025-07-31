@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<div layout:fragment="content" class="container py-5 text-center">
+    <h2>🎉 매칭이 성사되었습니다!</h2>
+    <p class="mt-4">
+        <strong th:text="${spot.name}">풋살장 이름</strong><br>
+        <span th:text="${slot.date}">2025-05-23</span><br>
+        <span th:text="${slot.startTime}">10:00</span> ~
+        <span th:text="${slot.endTime}">12:00</span>
+    </p>
+    <a th:href="@{/myMatches}" class="btn btn-primary mt-4">매칭내역 보러가기</a>
+    <p class="mt-4">상대방과 연락을 원하시면 채팅방에서 대화를 시작하세요.</p>
+    <a th:href="@{'/chat/slot/' + ${slotId}}" class="btn btn-success">채팅하러 가기</a>
+</div>
+
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+  <title>포인트 사용 내역</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div th:replace="fragments/header :: header"></div>
+
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">📒 포인트 사용 내역</h2>
+    <div class="bg-white border rounded px-4 py-2 shadow-sm">
+      <strong>보유 포인트:</strong>
+      <span class="text-danger fw-bold" th:text="${#numbers.formatInteger(loginPoint, 1, 'COMMA')} + ' P'">50000 P</span>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover bg-white shadow-sm">
+      <thead class="table-dark text-center">
+      <tr>
+        <th scope="col">날짜</th>
+        <th scope="col">금액</th>
+        <th scope="col">설명</th>
+        <th scope="col">구장</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="h : ${historyList}" class="text-center align-middle">
+        <td th:text="${#temporals.format(h.regTime, 'yyyy-MM-dd HH:mm')}">날짜</td>
+        <td th:text="${h.amount > 0 ? '+' + h.amount + ' P' : h.amount + ' P'}"
+            th:classappend="${h.amount > 0} ? 'text-danger fw-bold' : 'text-primary fw-bold'">+5000P</td>
+        <td th:text="${h.description}">설명</td>
+        <td th:text="${h.spotName != null ? h.spotName : '-'}">구장</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="text-center mt-4">
+    <a href="/myPage" class="btn btn-outline-secondary">← 마이페이지로 돌아가기</a>
+  </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

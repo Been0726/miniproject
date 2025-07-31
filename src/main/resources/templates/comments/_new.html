@@ -1,0 +1,26 @@
+<div th:fragment="commentsNew">
+    <div class="card m-2" id="comments-new">
+        <div class="card-body">
+            <!-- 댓글 작성 폼 -->
+            <form>
+                <div class="mb-3">
+                    <label class="form-label">
+                        <strong class="text-primary" style="font-size: 1.1rem;">👤 [[${nickname}]]</strong>
+                    </label>
+                </div>
+
+                <div class="mb-3">
+<!--                    <label class="form-label">댓글 내용</label>-->
+                    <textarea type="text" rows="3" class="form-control" id="new-comment-body"
+                              placeholder="댓글을 입력하세요..."></textarea>
+                </div>
+
+                <input type="hidden" id="new-comment-article-id" th:value="${article.id}">
+
+                <button type="button" class="btn btn-outline-primary w-100" id="comment-create-btn">
+                    💬 댓글 작성
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

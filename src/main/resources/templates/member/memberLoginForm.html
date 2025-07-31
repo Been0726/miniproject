@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<!-- 사용자 CSS 추가 -->
+<th:block layout:fragment="css">
+    <style>
+        .error {
+            color: #bd2130;
+        }
+    </style>
+</th:block>
+
+<div layout:fragment="content">
+
+    <p th:if="${sessionErrorMessage}" th:text="${sessionErrorMessage}" class="text-danger">에러 메시지 표시</p>
+
+    <div class="container mt-5" style="max-width: 450px;">
+        <h3 class="text-center mb-4">로그인</h3>
+
+        <form role="form" method="post" action="/members/login" class="border p-4 rounded shadow-sm bg-light">
+            <div class="mb-3">
+                <label for="email" class="form-label">이메일주소</label>
+                <input type="email" name="email" class="form-control" placeholder="이메일을 입력해주세요">
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">비밀번호</label>
+                <input type="password" name="password" id="password" class="form-control" placeholder="비밀번호 입력">
+            </div>
+
+            <p th:if="${loginErrorMsg}" class="error mb-3" th:text="${loginErrorMsg}"></p>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">로그인</button>
+                <a href="/members/new" class="btn btn-outline-secondary">회원가입</a>
+            </div>
+
+            <!-- 🔥 소셜 로그인 -->
+            <div class="mt-4 text-center">
+                <p class="mb-2">또는 소셜 계정으로 로그인</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="/oauth2/authorization/google" class="btn btn-outline-danger">Google</a>
+                    <a href="/oauth2/authorization/naver" class="btn btn-outline-success">Naver</a>
+                    <a href="/oauth2/authorization/kakao" class="btn btn-warning">Kakao</a>
+                </div>
+            </div>
+
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        </form>
+    </div>
+
+</div>
+
+<script th:inline="javascript">
+    const errorMessage = /*[[${sessionErrorMessage}]]*/ null;
+    if (errorMessage !== null && errorMessage !== undefined && errorMessage !== 'null') {
+        alert(errorMessage);
+        fetch("/members/login/clear-error", { method: "POST" });
+    }
+</script>
+
+
+</html>
+

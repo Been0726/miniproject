@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<div th:fragment="header">
+
+  <!-- ✅ header 높이와 정렬 강제 통일 -->
+  <style>
+    .navbar {
+      height: 64px !important;
+      min-height: 64px !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      font-size: 1rem !important;
+    }
+
+    .navbar .container-fluid {
+      height: 64px !important;
+      align-items: center !important;
+    }
+
+    .navbar .collapse {
+      height: auto !important;
+    }
+
+    .navbar-brand {
+      font-size: 1.25rem !important;
+      font-weight: bold !important;
+      line-height: 1 !important;
+      color: white !important;
+    }
+
+    .navbar .btn,
+    .navbar .form-control,
+    .navbar .nav-link {
+      font-size: 1rem !important;
+      padding-top: 0.375rem;
+      padding-bottom: 0.375rem;
+      line-height: 1.5;
+    }
+
+    .navbar .form-control-sm {
+      font-size: 0.9rem !important;
+    }
+
+    .navbar-toggler {
+      height: 40px;
+    }
+  </style>
+
+  <nav class="navbar navbar-expand-sm navbar-dark px-4" style="background-color: #343a40;">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">JB Art Soccer</a>
+
+      <button class="navbar-toggler" type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#navbarTogglerDemo03"
+              aria-controls="navbarTogglerDemo03"
+              aria-expanded="false"
+              aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-between" id="navbarTogglerDemo03">
+        <!-- 왼쪽 메뉴 -->
+        <ul class="navbar-nav mb-2 mb-lg-0">
+          <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN')">
+            <a class="nav-link" href="/admin/item/new">상품 등록</a>
+          </li>
+          <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN')">
+            <a class="nav-link" href="/admin/items">상품 관리</a>
+          </li>
+          <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN')">
+            <a class="nav-link" href="/admin/match-status">매칭 통계</a>
+          </li>
+        </ul>
+
+        <!-- 오른쪽 메뉴 -->
+        <div class="d-flex align-items-center gap-3">
+          <!-- 로그인 상태 -->
+          <div sec:authorize="isAuthenticated()" class="d-flex align-items-center text-white gap-3">
+            <!-- 알림 -->
+            <div class="position-relative">
+              <button type="button" class="btn btn-sm btn-outline-light position-relative"
+                      data-bs-toggle="modal" data-bs-target="#notificationModal">
+                🔔
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                      th:if="${notificationCount > 0}" th:text="${notificationCount}">0</span>
+              </button>
+            </div>
+
+            <!-- 메뉴 -->
+            <div class="dropdown">
+              <a href="#" class="btn btn-sm btn-outline-light icon-btn" id="serviceDropdown"
+                 data-bs-toggle="dropdown" aria-expanded="false">⚽️</a>
+
+              <div class="dropdown-menu dropdown-menu-end p-3 shadow"
+                   aria-labelledby="serviceDropdown"
+                   data-bs-auto-close="outside"
+                   style="min-width: 280px; max-width: 320px;">
+                <div class="text-center mb-2">
+                  <strong th:if="${loginNickname != null}" th:text="${'⚽️ ' + loginNickname + '님'}">닉네임</strong>
+                  <div class="text-muted small mt-1">
+                    <span th:text="'보유 포인트: ' + ${loginPoint} + ' P'">보유 포인트: 0 P</span>
+                  </div>
+                </div>
+
+
+                <div class="row g-2 text-center">
+                  <div class="col-4"><a href="/myPage" class="text-decoration-none text-dark d-block">🙋‍♂️<div class="small mt-1">마이페이지</div></a></div>
+                  <div class="col-4"><a href="/point/charge" class="text-decoration-none text-dark d-block">💰<div class="small mt-1">포인트 충전</div></a></div>
+                  <div class="col-4"><a href="/point/history" class="text-decoration-none text-dark d-block">📜<div class="small mt-1">포인트 내역</div></a></div>
+                  <div class="col-4"><a href="/myRatings" class="text-decoration-none text-dark d-block">⭐<div class="small mt-1">내 평점</div></a></div>
+                  <div class="col-4"><a href="/cart" class="text-decoration-none text-dark d-block">🛒<div class="small mt-1">장바구니</div></a></div>
+                  <div class="col-4"><a href="/orders" class="text-decoration-none text-dark d-block">📦<div class="small mt-1">구매이력</div></a></div>
+                </div>
+                <hr>
+                <div class="text-center"><small class="text-muted">서비스 바로가기 메뉴입니다</small></div>
+              </div>
+            </div>
+
+            <!-- 로그아웃 -->
+            <a class="btn btn-sm btn-outline-light" href="/members/logout">로그아웃</a>
+          </div>
+
+          <!-- 비로그인 상태 -->
+          <ul class="navbar-nav" sec:authorize="isAnonymous()">
+            <li class="nav-item"><a class="btn btn-sm btn-outline-light" href="/members/new">회원가입</a></li>
+            <li class="nav-item"><a class="btn btn-sm btn-outline-light" href="/members/login">로그인</a></li>
+          </ul>
+
+          <!-- 검색창 -->
+          <form class="d-flex align-items-center" th:action="@{/}" method="get">
+            <input name="searchQuery" class="form-control form-control-sm me-2" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-sm btn-outline-success" type="submit">Search</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 알림 모달 -->
+  <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="notificationModalLabel">최근 알림</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <ul class="list-group" th:inline="javascript">
+            <li th:each="n : ${notifications}"
+                th:id="'notification-' + ${n.id}"
+                th:onclick="'markAsRead(' + ${n.id} + ')'"
+                th:classappend="${n.read} ? '' : 'bg-light fw-bold'"
+                class="list-group-item d-flex justify-content-between align-items-start position-relative"
+                style="cursor: pointer;">
+              <div class="ms-2 me-auto">
+                <div th:text="${n.content}">알림 내용</div>
+                <small class="text-muted" th:text="${#temporals.format(n.regTime, 'yyyy-MM-dd HH:mm')}">날짜</small>
+              </div>
+              <button type="button"
+                      class="btn-close position-absolute top-0 end-0 mt-2 me-2"
+                      th:onclick="'event.stopPropagation(); deleteNotification(' + ${n.id} + ')'"></button>
+            </li>
+          </ul>
+          <div th:if="${notifications == null or notifications.isEmpty()}">
+            <p class="text-center text-muted">알림이 없습니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flash 메시지 -->
+  <div th:if="${msg}" th:text="${msg}" class="alert alert-primary alert-dismissible fade show mt-2" role="alert">
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+
+</div>
+</html>

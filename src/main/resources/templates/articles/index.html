@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<div layout:fragment="content">
+
+  <div class="container mt-5">
+    <h2 class="mb-4 text-center">📋 게시판</h2>
+
+    <div class="text-end mt-3">
+      <a href="/articles/new" class="btn btn-outline-primary">✍️ 새 글 작성</a>
+    </div>
+
+    <table class="table table-hover align-middle bg-white shadow-sm rounded">
+      <thead class="table-light">
+      <tr class="text-center">
+        <th style="width: 10%;">글번호</th>
+        <th style="width: 40%;">제목</th>
+        <th style="width: 20%;">작성자</th>
+        <th style="width: 30%;">작성시간</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="article : ${articleList}" class="text-center">
+        <td th:text="${article.id}">1</td>
+        <td class="text-center">
+          <a th:href="@{/articles/{id}(id=${article.id})}"
+             th:text="${article.title}"
+             class="text-decoration-none text-dark fw-bold">제목</a>
+            <span style="margin-left: 6px; color: gray;">
+        💬   [[${commentCountMap[article.id]}]]
+            </span>
+        </td>
+        <td th:text="${nicknameMap[article.id]}">작성자</td>
+        <td th:text="${#temporals.format(article.regTime, 'yyyy-MM-dd HH:mm')}">작성시간</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<!-- ✅ 스타일 조각 -->
+<th:block layout:fragment="css">
+    <style>
+        body {
+            background-color: #fffaf4;
+        }
+
+        main {
+            flex: 1;
+            padding: 60px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 60px;
+            flex-wrap: wrap;
+            padding-bottom: 60px;
+            width: 100%;
+        }
+
+        .hero-img-wrapper img,
+        .futsal-illustration {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 1rem;
+        }
+
+        .card-deck {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 50px 60px;
+            padding: 0 60px;
+            justify-items: center;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .card {
+            flex: 1 1 400px;
+            max-width: 420px;
+            min-width: 360px;
+            border-radius: 24px;
+            padding: 30px 20px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-body {
+            text-align: center;
+            padding: 2.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .card-body a.btn {
+            width: fit-content;
+            margin: 0 auto;
+        }
+
+        .card-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .btn {
+            font-size: 1rem;
+            padding: 12px 24px;
+            font-weight: 600;
+            border-radius: 10px;
+        }
+
+        .btn-outline-primary {
+            border: 2px solid #1d72b8;
+            color: #1d72b8;
+            background-color: transparent;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: #1d72b8;
+            color: #fff;
+        }
+
+        .btn-outline-success {
+            border: 2px solid #28a745;
+            color: #28a745;
+            background-color: transparent;
+        }
+
+        .btn-outline-success:hover {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .btn-outline-board {
+            border: 2px solid #6c757d;
+            color: #6c757d;
+            background-color: transparent;
+        }
+
+        .btn-outline-board:hover {
+            background-color: #6c757d;
+            color: #fff;
+        }
+    </style>
+</th:block>
+
+<!-- ✅ 본문 내용 조각 -->
+<div layout:fragment="content">
+    <section class="hero">
+        <div class="hero-img-wrapper">
+            <img src="https://raw.githubusercontent.com/BinBinToure/Springboot-AWS-Webservice/refs/heads/master/futsal-main.png"
+                 alt="풋살 일러스트"
+                 class="futsal-illustration" />
+        </div>
+    </section>
+
+    <div class="card-deck">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">🤝 풋살 매치 신청</h4>
+                <a href="/map" class="btn btn-outline-primary">매치 신청하기</a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">📍 나의 매칭 내역</h4>
+                <a href="/myMatches" class="btn btn-outline-success">풋살장 둘러보기</a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">💬 자유 게시판</h4>
+                <a href="/articles" class="btn btn-outline-board">게시판 가기</a>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">🛒 축구용품샵</h4>
+                <a href="/shop" class="btn btn-outline-board">쇼핑몰 가기</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</html>
+
